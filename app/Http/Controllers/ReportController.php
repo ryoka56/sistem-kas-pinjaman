@@ -56,6 +56,8 @@ class ReportController extends Controller
         $repayments = LoanRepayment::with('loan.member')
             ->whereBetween('payment_date', $range)->orderBy('payment_date')->get();
 
+        $cash = $this->cash->summary();
+
         return [
             'start' => $start,
             'end' => $end,
@@ -63,8 +65,8 @@ class ReportController extends Controller
             'expense' => (int) $transactions->where('type', TransactionType::Expense)->sum('amount'),
             'lent' => (int) $loans->sum('amount'),
             'received' => (int) $repayments->sum('amount'),
-            'unpaidTotal' => $this->cash->totalUnpaidLoans(),
-            'balance' => $this->cash->balance(),
+            'unpaidTotal' => $cash['unpaid'],
+            'balance' => $cash['balance'],
             'transactions' => $transactions,
             'loans' => $loans,
             'repayments' => $repayments,

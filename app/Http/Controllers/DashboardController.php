@@ -26,7 +26,7 @@ class DashboardController extends Controller
             'balance' => $cash['balance'],
             'totalIncome' => $cash['income'],
             'totalExpense' => $cash['expense'],
-            'totalUnpaid' => $this->cash->totalUnpaidLoans(),
+            'totalUnpaid' => $cash['unpaid'],
             'months' => self::MONTHS,
             'incomePerMonth' => $this->sumPerMonth(TransactionType::Income, $year),
             'expensePerMonth' => $this->sumPerMonth(TransactionType::Expense, $year),
