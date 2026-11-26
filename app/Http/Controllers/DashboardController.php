@@ -20,10 +20,12 @@ class DashboardController extends Controller
     {
         $year = now()->year;
 
+        $cash = $this->cash->summary();
+
         return view('dashboard', [
-            'balance' => $this->cash->balance(),
-            'totalIncome' => $this->cash->totalIncome(),
-            'totalExpense' => $this->cash->totalExpense(),
+            'balance' => $cash['balance'],
+            'totalIncome' => $cash['income'],
+            'totalExpense' => $cash['expense'],
             'totalUnpaid' => $this->cash->totalUnpaidLoans(),
             'months' => self::MONTHS,
             'incomePerMonth' => $this->sumPerMonth(TransactionType::Income, $year),

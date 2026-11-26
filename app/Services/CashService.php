@@ -3,43 +3,54 @@
 namespace App\Services;
 
 use App\Enums\LoanStatus;
-use App\Enums\TransactionType;
 use App\Exceptions\InsufficientBalanceException;
 use App\Models\Loan;
-use App\Models\LoanRepayment;
-use App\Models\Transaction;
+use Illuminate\Support\Facades\DB;
 
 class CashService
 {
-    public function totalIncome(): int
+    /**
+     * Empat angka dasar kas dalam SATU query, selalu segar (tidak di-cache).
+     * Database bisa jauh (TiDB ~120 ms/query), jadi jumlah query harus sedikit.
+     *
+     * @return array{income:int, expense:int, lent:int, repaid:int, balance:int}
+     */
+    public function summary(): array
     {
-        return (int) Transaction::where('type', TransactionType::Income)->sum('amount');
+        $row = DB::selectOne("
+            SELECT
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'income')  AS income,
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'expense') AS expense,
+                (SELECT COALESCE(SUM(amount), 0) FROM loans)                               AS lent,
+                (SELECT COALESCE(SUM(amount), 0) FROM loan_repayments)                     AS repaid
+        ");
+
+        $income = (int) $row->income;
+        $expense = (int) $row->expense;
+        $lent = (int) $row->lent;
+        $repaid = (int) $row->repaid;
+
+        return [
+            'income' => $income,
+            'expense' => $expense,
+            'lent' => $lent,
+            'repaid' => $repaid,
+            'balance' => $income + $repaid - $expense - $lent,
+        ];
     }
 
-    public function totalExpense(): int
-    {
-        return (int) Transaction::where('type', TransactionType::Expense)->sum('amount');
-    }
-
-    public function totalLent(): int
-    {
-        return (int) Loan::sum('amount');
-    }
-
-    public function totalRepaid(): int
-    {
-        return (int) LoanRepayment::sum('amount');
-    }
-
+    /** Rumus saldo: (pemasukan + cicilan) − (pengeluaran + pinjaman). */
     public function balance(): int
     {
-        return $this->totalIncome() + $this->totalRepaid()
-            - $this->totalExpense() - $this->totalLent();
+        return $this->summary()['balance'];
     }
 
     public function totalUnpaidLoans(): int
     {
-        return (int) Loan::where('status', LoanStatus::Unpaid)->get()->sum->remaining_amount;
+        return (int) Loan::where('status', LoanStatus::Unpaid)
+            ->withSum('repayments', 'amount')
+            ->get()
+            ->sum->remaining_amount;
     }
 
     /** Satu gerbang untuk semua operasi yang mengeluarkan uang dari kas. */
