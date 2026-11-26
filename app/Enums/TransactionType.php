@@ -14,15 +14,4 @@ enum TransactionType: string
             self::Expense => 'Pengeluaran',
         };
     }
-
-    /** @return array<string, string> nilai => label, untuk <select> */
-    public static function options(): array
-    {
-        $options = [];
-        foreach (self::cases() as $case) {
-            $options[$case->value] = $case->label();
-        }
-
-        return $options;
-    }
 }

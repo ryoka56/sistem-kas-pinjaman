@@ -36,7 +36,7 @@
             <tbody class="divide-y">
                 @forelse ($recent as $item)
                     <tr>
-                        <td class="px-5 py-2">{{ \Illuminate\Support\Carbon::parse($item['date'])->format('d/m/Y') }}</td>
+                        <td class="px-5 py-2">{{ $item['date']->format('d/m/Y') }}</td>
                         <td class="px-5 py-2">{{ $item['type'] }}</td>
                         <td class="px-5 py-2">{{ $item['title'] }}</td>
                         <td class="px-5 py-2 text-right {{ $item['amount'] < 0 ? 'text-red-600' : 'text-emerald-600' }}">

@@ -198,7 +198,11 @@ class LoanFlowTest extends TestCase
     {
         $this->income(1_000_000);
 
-        $this->actingAs($this->admin())->get('/dashboard')->assertOk()->assertSee('Saldo Kas');
+        $this->actingAs($this->admin())->get('/dashboard')
+            ->assertOk()
+            ->assertSee('Saldo Kas')
+            ->assertSee('10 Aktivitas Terakhir')
+            ->assertSee(now()->format('d/m/Y'));
         $this->actingAs($this->admin())->get('/kas')->assertOk();
         $this->actingAs($this->admin())->get('/loans')->assertOk();
         $this->actingAs($this->admin())->get('/repayments')->assertOk();
