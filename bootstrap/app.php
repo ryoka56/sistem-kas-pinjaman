@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Vercel meneruskan request sebagai HTTP; tanpa ini aset jadi http:// dan
         // browser memblokirnya sebagai mixed content.
         $middleware->trustProxies(at: '*');
+
+        // Ukur waktu per komponen (header Server-Timing). Hapus kalau sudah selesai.
+        $middleware->prepend(\App\Http\Middleware\Timing::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
