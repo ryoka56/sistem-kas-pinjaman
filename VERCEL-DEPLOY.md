@@ -14,6 +14,21 @@ vercel link --yes --project sistem-kas
 vercel deploy --prod
 ```
 
+## Performa (terukur di produksi)
+
+Sebelum: `/dashboard` **7,3 detik** (server-side). Sesudah: **0,19 detik**.
+
+Penyebab dan perbaikannya:
+
+| Penyebab | Perbaikan |
+|---|---|
+| Container jalan di `iad1` (US) sementara TiDB di Singapore → ±500–1000 ms per query | `serverlessFunctionRegion` project diset `sin1` (lewat API Vercel) |
+| 13 query per halaman | Semua angka kas jadi **1 query** (`CashService::summary()`), chart 2 query |
+| Sesi di database = 1 baca + 1 tulis per request | `SESSION_DRIVER=cookie` |
+
+Cara mengukur kalau mencurigai lambat lagi: pasang middleware kecil yang menulis header
+`Server-Timing` (app + durasi DB + jumlah query), lalu `curl -D -`.
+
 ## Dua jebakan yang sudah ketemu
 
 1. **Deployment Protection** — Hobby menyalakan "Vercel Authentication" untuk production,
