@@ -1,5 +1,8 @@
 # Sistem Kas & Peminjaman — Panduan Jalan
 
+**Live:** https://sistem-kas-teal.vercel.app (login `admin@example.com` / `password`)
+Database: TiDB Cloud (Singapore). Setiap `git push` ke `main` otomatis deploy.
+
 Laravel 12 + MySQL, single admin. Spesifikasi lengkap: `../PRD-v2.md`.
 
 ## Akun

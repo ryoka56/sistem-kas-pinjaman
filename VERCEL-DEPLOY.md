@@ -1,7 +1,35 @@
 # Deploy Gratis: Vercel + TiDB Cloud (tanpa kartu kredit)
 
+**Status: SUDAH LIVE → https://sistem-kas-teal.vercel.app**
+
 Vercel Hobby tidak meminta kartu. Laravel jalan sebagai **container function** (FrankenPHP),
 database di **TiDB Cloud Starter** (MySQL-compatible, gratis).
+
+Cara yang benar-benar dipakai (CLI, bukan dashboard):
+
+```bash
+vercel login                      # device flow, tanpa kartu
+vercel link --yes --project sistem-kas
+# isi 9 env (lihat tabel di bawah) lalu:
+vercel deploy --prod
+```
+
+## Dua jebakan yang sudah ketemu
+
+1. **Deployment Protection** — Hobby menyalakan "Vercel Authentication" untuk production,
+   jadi URL-nya minta login Vercel dan dosen tidak bisa membuka. Matikan:
+   ```bash
+   curl -X PATCH "https://api.vercel.com/v9/projects/<projectId>?teamId=<teamId>" \
+     -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+     -d '{"ssoProtection":null,"passwordProtection":null}'
+   ```
+2. **Aset keluar sebagai `http://`** — Vercel meneruskan request sebagai HTTP, jadi Laravel
+   menulis URL http dan browser memblokirnya (halaman tanpa CSS). Perbaikannya di
+   `bootstrap/app.php`: `$middleware->trustProxies(at: '*');`
+
+3. **Jangan jalankan artisan/composer script saat build** — `package:discover` gagal karena
+   env baru tersedia saat container start. Karena itu `composer dump-autoload --no-scripts`
+   dan tanpa `route:cache`/`view:cache`.
 
 | Komponen | Jalan di | Perlu laptop? |
 |---|---|---|
