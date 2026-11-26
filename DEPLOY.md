@@ -25,11 +25,11 @@ Total waktu: ~30 menit, kebanyakan menunggu build.
    CREATE DATABASE sistem_kas;
    ```
    (Laravel tidak membuat database sendiri.)
-5. Di dialog Connect, unduh **CA cert** (`isrgrootx1.pem`). Simpan sebagai:
-   ```
-   docker/tidb-ca.pem
-   ```
-   File ini sertifikat publik, bukan rahasia — aman di-commit.
+5. TLS: tidak perlu unduh sertifikat. Image PHP memakai CA bundle sistem Debian
+   (`/etc/ssl/certs/ca-certificates.crt`) yang sudah memuat root CA penerbit sertifikat
+   TiDB, dan `render.yaml` sudah menunjuk ke sana. Kalau koneksi tetap ditolak,
+   unduh CA dari dialog Connect TiDB, taruh di `docker/tidb-ca.pem`, lalu ubah
+   `MYSQL_ATTR_SSL_CA` di `render.yaml` jadi `/var/www/html/docker/tidb-ca.pem`.
 
 ## 2. Render (aplikasi)
 
@@ -62,6 +62,21 @@ Container otomatis menjalankan `php artisan migrate --force --seed` saat start (
 | Build gagal di Apache? | Fallback: ganti baris terakhir `Dockerfile` jadi `CMD ["sh","-c","php artisan serve --host=0.0.0.0 --port=${PORT:-80}"]` |
 
 Alternatif kalau butuh **selalu bangun** (tanpa tidur): Oracle Cloud Always Free (VPS ARM gratis permanen), tapi setup manual nginx+php-fpm ~1–2 jam dan verifikasi kartu saat daftar.
+
+## Menghindari "tidur" tanpa bayar
+
+Daftar gratis di https://cron-job.org → buat job yang memanggil `https://<service>.onrender.com/login` **tiap 10 menit**. Trafik masuk menunda spin-down, jadi aplikasi praktis selalu siap saat dosen membukanya. Kuota 750 jam/bulan masih cukup (satu bulan penuh = 720 jam).
+
+## Di mana apa berjalan
+
+| Komponen | Jalan di | Perlu laptopmu? |
+|---|---|---|
+| Laravel + Apache | Container Render (Singapura) | tidak |
+| MySQL (TiDB) | TiDB Cloud (Singapura) | tidak |
+| CSS/JS/Chart.js | Dibangun di dalam image saat build | tidak |
+| File upload | Tidak ada fitur upload | — |
+
+Laptop hanya dipakai untuk `git push` saat ada perubahan kode. Setelah itu tidak ada yang bergantung pada mesinmu — MySQL lokal di D: hanya untuk kerja harian.
 
 ## Perintah lokal yang berguna
 
