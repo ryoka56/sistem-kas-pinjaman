@@ -36,7 +36,7 @@ Atau klik `mulai.bat` (melakukan langkah 1 dan 2 sekaligus).
 | `php artisan migrate:fresh --seed` | Reset database + data demo (skenario Andi) |
 | `npm run build` | Build ulang CSS/JS kalau ada perubahan tampilan |
 
-## Peta kode (untuk sidang)
+## Peta kode
 
 | Lokasi | Isi |
 |---|---|
